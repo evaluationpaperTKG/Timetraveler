@@ -128,7 +128,7 @@ Grant asylum	126
 Accede to demands for change in leadership	127
 Give ultimatum	128
 Threaten with sanctions, boycott, embargo	129
-Conduct suicide, car, or other non-military bombing	130
+Conduct suicide, car, or other non military bombing	130
 Accuse of espionage, treason	131
 Appeal for easing of administrative sanctions	132
 Refuse to yield	133
@@ -145,7 +145,7 @@ Reduce or stop humanitarian assistance	143
 Investigate crime, corruption	144
 Refuse to release persons or property	145
 Express intent to cooperate on judicial matters	146
-Threaten non-force	147
+Threaten non force	147
 Demand de-escalation of military engagement	148
 Impose blockade, restrict movement	149
 Demand release of persons or property	150
@@ -184,7 +184,7 @@ Express intent to accept mediation	182
 Ease economic sanctions, boycott, embargo	183
 Demand judicial cooperation	184
 Threaten with political dissent, protest	185
-Appeal for target to allow international involvement (non-mediation)	186
+Appeal for target to allow international involvement (non mediation)	186
 Threaten with administrative sanctions	187
 Conduct hunger strike for leadership change	188
 Demand easing of administrative sanctions	189
@@ -247,7 +247,7 @@ Obstruct passage to demand policy change	245
 Obstruct passage to demand leadership change	246
 Ease state of emergency or martial law	247
 Threaten to impose state of emergency or martial law	248
-Express intent to allow international involvement (non-mediation)	249
+Express intent to allow international involvement (non mediation)	249
 Demand material aid	250
 Demand easing of political dissent	251
 Ease curfew	252
