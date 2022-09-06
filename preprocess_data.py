@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Data preprocess', usage='preprocess_data.py [<args>] [-h | --help]')
-    parser.add_argument('--data_dir', default='data/ICEWS14', type=str, help='Path to data.')
+    parser.add_argument('--data_dir', default='data/ICEWS18', type=str, help='Path to data.') #modified eval_paper_authors: added TITer-maser/ 
     parser.add_argument('--outfile', default='state_actions_space.pkl', type=str,
                         help='file to save the preprocessed data.')
     parser.add_argument('--store_actions_num', default=0, type=int,

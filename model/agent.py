@@ -104,7 +104,7 @@ class Agent(nn.Module):
         """
         # embeddings
         current_delta_time = query_timestamps - current_timestamps
-        current_embds = self.ent_embs(current_entities, current_delta_time)  # [batch_size, ent_dim]
+        current_embds = self.ent_embs(current_entities, current_delta_time)  # [batch_size, ent_dim] #dynamic embedding
         prev_relation_embds = self.rel_embs(prev_relation)  # [batch_size, rel_dim]
 
         # Pad Mask
@@ -115,7 +115,7 @@ class Agent(nn.Module):
         NO_OP_mask = torch.eq(prev_relation, torch.ones_like(prev_relation) * self.NO_OP)  # [batch_size]
         NO_OP_mask = NO_OP_mask.repeat(self.config['state_dim'], 1).transpose(1, 0)  # [batch_size, state_dim]
         prev_action_embedding = torch.cat([prev_relation_embds, current_embds], dim=-1)  # [batch_size, rel_dim + ent_dim]
-        lstm_output = self.policy_step(prev_action_embedding, NO_OP_mask)  # [batch_size, state_dim]
+        lstm_output = self.policy_step(prev_action_embedding, NO_OP_mask)  # [batch_size, state_dim] (5) Path encoding
 
         # Neighbor/condidate_actions embeddings
         action_num = action_space.size(1)
@@ -137,16 +137,16 @@ class Agent(nn.Module):
 
         agent_state_repeats = agent_state.unsqueeze(1).repeat(1, actions.shape[1], 1)
         score_attention_input = torch.cat([actions, agent_state_repeats], dim=-1)
-        a = self.score_weighted_fc(score_attention_input)
-        a = torch.sigmoid(a).squeeze()  # [batch_size, action_number]
+        a = self.score_weighted_fc(score_attention_input)                                   # (8)
+        a = torch.sigmoid(a).squeeze()                      # [batch_size, action_number]   # (8)
 
-        scores = (1 - a) * relation_score + a * entities_score
+        scores = (1 - a) * relation_score + a * entities_score                              # (6) a= beta
 
         # Padding mask
         scores = scores.masked_fill(pad_mask, -1e10)  # [batch_size ,action_number]
 
         action_prob = torch.softmax(scores, dim=1)
-        action_id = torch.multinomial(action_prob, 1)  # Randomly select an action. [batch_size, 1]
+        action_id = torch.multinomial(action_prob, 1)  # Randomly select an action. [batch_size, 1] # ACTION SELECTION
 
         logits = torch.nn.functional.log_softmax(scores, dim=1)  # [batch_size, action_number]
         one_hot = torch.zeros_like(logits).scatter(1, action_id, 1)

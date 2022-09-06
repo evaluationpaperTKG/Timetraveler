@@ -62,14 +62,14 @@ class Trainer(object):
                 bar.set_postfix(loss='%.4f' % reinfore_loss, reward='%.4f' % torch.mean(reward).item())
         return total_loss / counter, total_reward / counter
 
-    def save_model(self, checkpoint_path='checkpoint.pth'):
+    def save_model(self, model_name=None, checkpoint_path='checkpoint.pth'): #added eval_paper_authors:model name
         """Save the parameters of the model and the optimizer,"""
         argparse_dict = vars(self.args)
-        with open(os.path.join(self.args.save_path, 'config.json'), 'w') as fjson:
+        with open(os.path.join(self.args.save_path, model_name+'config.json'), 'w') as fjson: #added eval_paper_authors:model name
             json.dump(argparse_dict, fjson)
 
         torch.save({
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict()},
-            os.path.join(self.args.save_path, checkpoint_path)
+            os.path.join(self.args.save_path, model_name+checkpoint_path)#added eval_paper_authors:model name
         )

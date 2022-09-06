@@ -85,7 +85,7 @@ class Episode(nn.Module):
             beam_prob: [batch_size, test_rollouts_num]
         """
         batch_size = query_entities.shape[0]
-        query_entities_embeds = self.agent.ent_embs(query_entities, torch.zeros_like(query_timestamps))
+        query_entities_embeds = self.agent.ent_embs(query_entities, torch.zeros_like(query_timestamps)) #dynamic embedding (4)
         query_relations_embeds = self.agent.rel_embs(query_relations)
 
         self.agent.policy_step.set_hiddenx(batch_size)

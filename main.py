@@ -20,10 +20,10 @@ def parse_args(args=None):
         usage='main.py [<args>] [-h | --help]'
     )
 
-    parser.add_argument('--cuda', action='store_true', help='whether to use GPU or not.')
-    parser.add_argument('--data_path', type=str, default='data/ICEWS14', help='Path to data.')
-    parser.add_argument('--do_train', action='store_true', help='whether to train.')
-    parser.add_argument('--do_test', action='store_true', help='whether to test.')
+    parser.add_argument('--cuda', default=True, action='store_true', help='whether to use GPU or not.') 
+    parser.add_argument('--data_path', type=str, default='ICEWS14', help='Path to data. eval_paper_authors modified it so we only need dataset name here') #changed eval_paper_authors: Timetraveller/TITer-master/
+    parser.add_argument('--do_train',action='store_true', help='whether to train.') 
+    parser.add_argument('--do_test', default=True, action='store_true', help='whether to test.')  #changed eval_paper_authors:set to true
     parser.add_argument('--save_path', default='logs', type=str, help='log and model save path.')
     parser.add_argument('--load_model_path', default='logs', type=str, help='trained model checkpoint path.')
 
@@ -59,7 +59,7 @@ def parse_args(args=None):
 
     # Episode Params
     parser.add_argument('--path_length', default=3, type=int, help='the agent search path length.')
-    parser.add_argument('--max_action_num', default=50, type=int, help='the max candidate actions number.')
+    parser.add_argument('--max_action_num', default=50, type=int, help='the max candidate actions number.') # eval_paper_authors: this is N - A.3: 50 for ICEWS14 and ICEWS18, 60 for WIKI, and 30 for YAGO
 
     # Policy Gradient Params
     parser.add_argument('--Lambda', default=0.0, type=float, help='update rate of baseline.')
@@ -68,11 +68,16 @@ def parse_args(args=None):
     parser.add_argument('--Zita', default=0.9, type=float, help='attenuation factor of entropy regular term.')
 
     # reward shaping params
-    parser.add_argument('--reward_shaping', action='store_true', help='whether to use reward shaping.')
+    parser.add_argument('--reward_shaping', action='store_true', help='whether to use reward shaping.') #eval_paper_authors in run.py: set to True
     parser.add_argument('--time_span', default=24, type=int, help='24 for ICEWS, 1 for WIKI and YAGO')
     parser.add_argument('--alphas_pkl', default='dirchlet_alphas.pkl', type=str,
                         help='the file storing the alpha parameters of the Dirichlet distribution.')
     parser.add_argument('--k', default=300, type=int, help='statistics recent K historical snapshots.')
+
+    # eval_paper_authors added params for logging
+    parser.add_argument('--setting', type=str, default='time', choices=['time', 'static', 'raw' ]) #added eval_paper_authors for logging
+    parser.add_argument('--singleormultistep', type=str, default='singlestep', choices=['singlestep', 'multistep' ]) #added eval_paper_authors for logging
+
 
     return parser.parse_args(args)
 
@@ -111,11 +116,13 @@ def main(args):
         args.cuda = False
     set_logger(args)
 
+    data_path = os.path.join('data', args.data_path) #modified eval_paper_authors
+
     #######################Create DataLoader#################################
-    train_path = os.path.join(args.data_path, 'train.txt')
-    test_path = os.path.join(args.data_path, 'test.txt')
-    stat_path = os.path.join(args.data_path, 'stat.txt')
-    valid_path = os.path.join(args.data_path, 'valid.txt')
+    train_path = os.path.join(data_path, 'train.txt') #modified eval_paper_authors -> args.data_path to data_path
+    test_path = os.path.join(data_path, 'test.txt') #modified eval_paper_authors -> args.data_path to data_path
+    stat_path = os.path.join(data_path, 'stat.txt') #modified eval_paper_authors -> args.data_path to data_path
+    valid_path = os.path.join(data_path, 'valid.txt') #modified eval_paper_authors -> args.data_path to data_path
 
     baseData = baseDataset(train_path, test_path, stat_path, valid_path)
 
@@ -152,11 +159,11 @@ def main(args):
     agent = Agent(config)
 
     # creat the environment
-    state_actions_path = os.path.join(args.data_path, args.state_actions_path)
+    state_actions_path = os.path.join(data_path, args.state_actions_path) #modified eval_paper_authors -> args.data_path to data_path
     if not os.path.exists(state_actions_path):
         state_action_space = None
     else:
-        state_action_space = pickle.load(open(os.path.join(args.data_path, args.state_actions_path), 'rb'))
+        state_action_space = pickle.load(open(os.path.join(data_path, args.state_actions_path), 'rb')) #modified eval_paper_authors -> args.data_path to data_path
     env = Env(baseData.allQuadruples, config, state_action_space)
 
     # Create episode controller
@@ -175,7 +182,7 @@ def main(args):
 
     ######################Training and Testing###########################
     if args.reward_shaping:
-        alphas = pickle.load(open(os.path.join(args.data_path, args.alphas_pkl), 'rb'))
+        alphas = pickle.load(open(os.path.join(data_path, args.alphas_pkl), 'rb')) #modified eval_paper_authors -> args.data_path to data_path
         distributions = Dirichlet(alphas, args.k)
     else:
         distributions = None
@@ -188,7 +195,9 @@ def main(args):
             logging.info('Epoch {}/{} Loss: {}, reward: {}'.format(i, args.max_epochs, loss, reward))
 
             if i % args.save_epoch == 0 and i != 0:
-                trainer.save_model('checkpoint_{}.pth'.format(i))
+                # trainer.save_model('checkpoint_{}.pth'.format(i)) #
+                model_name = str(args.data_path) +  '_' + args.setting + '_' + args.singleormultistep + '_' #added eval_paper_authors
+                trainer.save_model(model_name, 'checkpoint_{}.pth'.format(i)) #modified eval_paper_authors
                 logging.info('Save Model in {}'.format(args.save_path))
 
             if i % args.valid_epoch == 0 and i != 0:
@@ -199,8 +208,8 @@ def main(args):
                                       config['num_ent'])
                 for mode in metrics.keys():
                     logging.info('{} at epoch {}: {}'.format(mode, i, metrics[mode]))
-
-        trainer.save_model()
+        model_name = str(args.data_path) +  '_' + args.setting + '_' + args.singleormultistep + '_' #added eval_paper_authors
+        trainer.save_model(model_name) #modified eval_paper_authors: model_name
         logging.info('Save Model in {}'.format(args.save_path))
 
     if args.do_test:
@@ -208,7 +217,12 @@ def main(args):
         metrics = tester.test(test_dataloader,
                               testDataset.__len__(),
                               baseData.skip_dict,
-                              config['num_ent'])
+                              config['num_ent'],
+                              log_scores_flag=True,                         # added eval_paper_authors
+                              dataset_dir=data_path,                        # added eval_paper_authors
+                              dataset_name=args.data_path,                  # added eval_paper_authors
+                              setting=args.setting,                         # added eval_paper_authors
+                              singleormultistep=args.singleormultistep)     # added eval_paper_authors
         for mode in metrics.keys():
             logging.info('Test {} : {}'.format(mode, metrics[mode]))
 

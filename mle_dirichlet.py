@@ -6,9 +6,9 @@ from model.dirichlet import MLE_Dirchlet
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Dirichlet MLE', usage='mle_dirichlet.py [<args>] [-h | --help]')
-    parser.add_argument('--data_dir', default='data/ICEWS14', type=str)
+    parser.add_argument('--data_dir', default='Timetraveller/TITer-master/data/ICEWS14', type=str) # modified eval_paper_authors: adde Timetraveller/TITer-master/
     parser.add_argument('--outfile', default='dirchlet_alphas.pkl', type=str)
-    parser.add_argument('--k', default=300, type=int)
+    parser.add_argument('--k', default=305, type=int) # modified eval_paper_authors: was 300, is now 305 to cover all train timesteps for our icews14 version
     parser.add_argument('--time_span', default=24, type=int, help='24 for ICEWS, 1 for WIKI and YAGO')
     parser.add_argument('--tol', default=1e-7, type=float)
     parser.add_argument('--method', default='meanprecision', type=str)
